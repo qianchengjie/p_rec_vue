@@ -1,13 +1,13 @@
 import requests from '../requests'
 
 const state = {
-  articleId: null,
+  article: {},
   articleList: [],
   topList: []
 }
 
 const getters = {
-  articleId: state => state.articleId,
+  article: state => state.article,
   articleList: state => state.articleList,
   topList: state => state.topList
 }
@@ -24,14 +24,13 @@ const actions = {
   getArticle ({ commit, state }, { articleId }) {
     return requests.get(
       'http://zhihuapi.herokuapp.com/api/4/news/' + articleId,
-      { articleId },
       commit,
       'getArticle',
       true
     )
   },
   getExtraInfo ({ commit, state }) {
-    return requests.get('http://zhihuapi.herokuapp.com/api/4/story-extra/' + state.articleId, true)
+    return requests.get('http://zhihuapi.herokuapp.com/api/4/story-extra/' + state.article.id, true)
   }
 }
 
@@ -56,8 +55,8 @@ const mutations = {
     }
     state.articleListLoading = false
   },
-  getArticle (state, { res, payload }) {
-    state.articleId = payload.articleId
+  getArticle (state, { res }) {
+    state.article = res.data
   }
 }
 

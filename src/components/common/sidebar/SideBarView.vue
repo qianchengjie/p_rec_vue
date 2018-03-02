@@ -11,13 +11,10 @@
         </div>
         <div class="drawer-content">
           <div class="menu">
-            <div v-for="(item, index) of themeList" @click="themeIndex=index" :key="item.id" :class="'menu-item' + (index === themeIndex ? ' active' : ' ')">
-              {{item.name}}
-            </div>
           </div>
         </div>
       </div>
-      <router-view :title="typeof (themeList[themeIndex]) !== 'undefined' ? themeList[themeIndex].name : ''" style="height: 100vh;" slot="routerview"></router-view>
+      <router-view style="height: 100vh;" slot="routerview"></router-view>
     </sidebar>
   </div>
 </template>
@@ -39,29 +36,18 @@ export default {
   },
   computed: {
     ...mapGetters({
-      themeList: 'themeList'
     })
   },
   mounted () {
-    this.getThemeList()
   },
   methods: {
     ...mapActions([
       'changeDrawerVisibility',
-      'getThemeList',
       'getArticleList',
       'updateLoading'
     ])
   },
   watch: {
-    themeIndex (val, oldVal) {
-      this.updateLoading(true)
-      this.changeDrawerVisibility().then(res => {
-        this.getArticleList().then(res => {
-          this.updateLoading(false)
-        })
-      })
-    }
   }
 }
 </script>
@@ -75,11 +61,12 @@ export default {
     background-color: #0099FF;
     color: #FFF;
     .log-reg {
+      height: 100%;
       color: #FFF;
-      display: block;
       font-size: 24px;
-      line-height: 18vh;
-      text-align: center;
+      display: -webkit-flex;
+      align-items: center;
+      justify-content: center;
     }
   }
   .drawer-content {

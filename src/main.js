@@ -17,7 +17,6 @@ Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 
 Vue.component('icon', Icon)
-
 Vue.use(VueLazyLoadImg)
 Vue.use(ElementUI)
 

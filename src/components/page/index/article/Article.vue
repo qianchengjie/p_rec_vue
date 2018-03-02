@@ -25,19 +25,16 @@ export default {
       activeTimer: null,
       activeInterval: 10,
       lasterActiveTime: 0,
-      article: {},
       extraInfo: {},
       preArticleId: ''
     }
   },
   mounted () {
     this.updateLoading(true)
-    if (this.preArticleId !== this.articleId) {
-      this.article = {}
+    if (this.preArticleId !== this.article.id) {
       this.extraInfo = {}
       this.getArticle({ articleId: this.$route.params.id }).then(res => {
-        this.article = res.data
-        this.preArticleId = this.articleId
+        this.preArticleId = this.article.id
         // 获取文章的评论数和点赞数
         this.getExtraInfo().then(res => {
           this.extraInfo = res.data
@@ -50,7 +47,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'articleId'
+      'article'
     ])
   },
   filters: {
@@ -63,7 +60,7 @@ export default {
     }
   },
   destroyed () {
-    alert('用户有效活动时间：' + this.activeTime + 's')
+    // alert('用户有效活动时间：' + this.activeTime + 's')
   },
   methods: {
     ...mapActions([
@@ -72,6 +69,7 @@ export default {
       'updateLoading'
     ]),
     addActiveListener () {
+      this.startCountActiveTime()
       document.ontouchstart = () => {
         this.activeTime++
         this.startCountActiveTime()

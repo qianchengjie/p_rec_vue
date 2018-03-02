@@ -1,11 +1,13 @@
 <template>
-  <div>
-    <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')"></x-header>
-    <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" :title="title">
-      <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
-    </x-header>
-    <div v-loading="loading" class="content">
-      <router-view v-show="!loading" />
+  <div v-loading="loading">
+    <div :style="loading ? 'visibility:hidden' : ''">
+      <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')" :title="loading ? '' : article.title"></x-header>
+      <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" >
+        <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
+      </x-header>
+      <div class="content">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
@@ -29,15 +31,18 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'loading'
+      'loading',
+      'article'
     ])
   },
   mounted () {
     this.isArticle = this.$route.fullPath !== '/'
+    this.getThemeList()
   },
   methods: {
     ...mapActions([
-      'changeDrawerVisibility'
+      'changeDrawerVisibility',
+      'getThemeList'
     ])
   },
   watch: {

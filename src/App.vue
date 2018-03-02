@@ -31,7 +31,7 @@ export default {
 body {
   background-color: #fbf9fe;
 }
-html, body {
+html, body, #app {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
@@ -45,6 +45,12 @@ html, body {
 }
 .vux-header {
   background-color: #0099FF !important;
+}
+.vux-header .vux-header-title, .vux-header .vux-header-left {
+  line-height: normal !important;
+  display: -webkit-flex;
+  align-items: center;
+  justify-content: center;
 }
 .vux-header .vux-header-left .vux-header-back {
   color: #FFF

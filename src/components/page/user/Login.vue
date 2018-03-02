@@ -19,7 +19,7 @@
             </el-input>
           </el-form-item>
           <el-form-item prop="password" class="hide-req-tip">
-            <el-input v-model="loginForm.password" placeholder="密码" >
+            <el-input v-model="loginForm.password" type="password" placeholder="密码" >
               <icon slot="prepend" name="password" :h="20" :w="20" />
             </el-input>
           </el-form-item>
@@ -48,12 +48,12 @@
             </el-input>
           </el-form-item>
           <el-form-item prop="password" class="hide-req-tip">
-            <el-input v-model="registerForm.password" placeholder="密码" >
+            <el-input v-model="registerForm.password" type="password" placeholder="密码" >
               <icon slot="prepend" name="password" :h="20" :w="20" />
             </el-input>
           </el-form-item>
           <el-form-item prop="passwordConfirm" class="hide-req-tip">
-            <el-input v-model="registerForm.passwordConfirm" placeholder="确认密码" >
+            <el-input v-model="registerForm.passwordConfirm" type="password" placeholder="确认密码" >
               <icon slot="prepend" name="password" :h="20" :w="20" />
             </el-input>
           </el-form-item>

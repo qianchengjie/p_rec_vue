@@ -6,6 +6,10 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
+      path: '/test',
+      component: () => import('@/components/common/TopSliderbar')
+    },
+    {
       path: '/',
       component: () => import('@/components/common/sidebar/SideBarView'),
       children: [
