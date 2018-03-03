@@ -1,7 +1,5 @@
 <template>
-  <div id="article">
-    用户有效活动时间：{{activeTime}}s <br />
-    时间间隔 {{activeInterval}}s
+  <div id="article" v-if="!loading">
     <div class="article">
       <div class="content-wrapper">
         <div class="image-wrapper">
@@ -47,7 +45,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'article'
+      'article',
+      'loading'
     ])
   },
   filters: {

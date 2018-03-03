@@ -65,5 +65,10 @@ html, body, #app {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+.vux-header .vux-header-title > span {
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+}
 </style>
 

@@ -1,12 +1,16 @@
 <template>
-  <div v-loading="loading">
-    <div :style="loading ? 'visibility:hidden' : ''">
-      <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')" :title="loading ? '' : article.title"></x-header>
-      <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" >
-        <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
-      </x-header>
-      <div class="content">
-        <router-view />
+  <div>
+    <div>
+      <div v-show="isArticleList || isArticle">
+        <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')" :title="loading ? '' : article.title"></x-header>
+        <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" >
+          <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
+        </x-header>
+      </div>
+      <div v-loading="loading || (isArticleList && articleListLoading)" class="content" :style="isArticle || isArticleList ? 'padding-top: 46px;margin-top: -46px;box-sizing: border-box;' : ''">
+        <router-view style="position: absolute; z-index: 2001; width: 100vw;" />
+        <div v-if="!isArticleList" style="background: #FFF; height: 100%; position: absolute; top: 0; width: 100vw; z-index: 2000"></div>
+        <article-list :style="isArticleList && !articleListLoading && !isArticle ? '' : 'visibility: hidden'"></article-list>
       </div>
     </div>
   </div>
@@ -23,6 +27,7 @@ export default {
   },
   data () {
     return {
+      isArticleList: true,
       isArticle: false
     }
   },
@@ -31,16 +36,20 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'loading',
-      'article'
+      'articleListLoading',
+      'article',
+      'loading'
     ])
   },
   mounted () {
     this.isArticle = this.$route.fullPath !== '/'
     this.getThemeList()
+    this.getArticleList()
   },
   methods: {
     ...mapActions([
+      'getArticleList',
+      'updateLoading',
       'changeDrawerVisibility',
       'getThemeList'
     ])
@@ -48,7 +57,11 @@ export default {
   watch: {
     $route: {
       handler (val, oldVal) {
-        this.isArticle = val.fullPath !== '/'
+        this.isArticleList = val.fullPath === '/'
+        if (this.isArticleList) {
+          this.updateLoading(false)
+        }
+        this.isArticle = val.name === 'article'
       },
       deep: true
     }
@@ -58,11 +71,9 @@ export default {
 
 <style scoped lang="less">
 .content {
-  padding-top: 46px;
-  margin-top: -46px;
-  box-sizing: border-box;
   height: 100vh;
-  overflow-x: auto;
-  z-index: 1
+  overflow-x: hidden;
+  z-index: 1;
+  position: relative;
 }
 </style>
