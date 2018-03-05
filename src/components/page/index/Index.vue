@@ -1,17 +1,16 @@
 <template>
-  <div>
-    <div>
-      <div v-show="isArticleList || isArticle">
-        <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')" :title="loading ? '' : article.title"></x-header>
-        <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" >
-          <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
-        </x-header>
-      </div>
-      <div v-loading="loading || (isArticleList && articleListLoading)" class="content" :style="isArticle || isArticleList ? 'padding-top: 46px;margin-top: -46px;box-sizing: border-box;' : ''">
-        <router-view style="position: absolute; z-index: 2001; width: 100vw;" />
-        <div v-if="!isArticleList" style="background: #FFF; height: 100%; position: absolute; top: 0; width: 100vw; z-index: 2000"></div>
-        <article-list :style="isArticleList && !articleListLoading && !isArticle ? '' : 'visibility: hidden'"></article-list>
-      </div>
+  <div class="index-page">
+    <div v-show="isArticleList || isArticle">
+      <x-header v-if="isArticle" style="position: abosolute; width: 100vw; top: 0; z-index: 2000;" @on-click-back="$router.push('/')" :title="loading ? '' : article.title">
+      </x-header>
+      <x-header v-else style="position: abosolute; width: 100vw; top: 0; z-index: 2000" :left-options="{showBack: false}" >
+        <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
+      </x-header>
+    </div>
+    <div v-loading="loading || (isArticleList && articleListLoading)" class="content" :style="isArticle || isArticleList ? 'padding-top: 46px;margin-top: -46px;box-sizing: border-box;' : ''">
+      <router-view style="position: absolute; z-index: 2001; width: 100vw;" />
+      <div v-if="!isArticleList" style="background: #FFF; height: 100%; position: absolute; top: 0; width: 100vw; z-index: 2000"></div>
+      <article-list :style="isArticleList && !articleListLoading && !isArticle ? '' : 'visibility: hidden'"></article-list>
     </div>
   </div>
 </template>
@@ -69,11 +68,13 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-.content {
-  height: 100vh;
-  overflow-x: hidden;
-  z-index: 1;
-  position: relative;
+<style lang="less">
+.index-page {
+  & > .content {
+    height: 100vh;
+    overflow-x: hidden;
+    z-index: 1;
+    position: relative;
+  }
 }
 </style>

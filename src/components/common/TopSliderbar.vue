@@ -26,10 +26,10 @@
     <div
     ref="content"
     :style="
-    (touch.isStart ? '' : 'transition: all .2s;') +
+    (touch.isStart ? '' : 'transition: transform .2s;') +
     'height: ' + contentStyle.height + 'px;' + 
     'width: ' + contentStyle.width + 'px;' + 
-    'transform: translateX(' + contentStyle.translateX + 'px)'"
+    'transform:  translateZ(0) translateX(' + contentStyle.translateX + 'px)'"
     class="content">
       <slot name="default"></slot>
     </div>
@@ -59,7 +59,9 @@
           startX: 0,
           endX: 0,
           startTime: 0,
-          isStart: true
+          isStart: true,
+          isScrollX: false,
+          isScrollY: false
         },
         listWidth: []
       }
@@ -141,15 +143,18 @@
           if (this.moveEnable) {
             if ((event.targetTouches.length > 1 || event.scale) && event.scale !== 1) return
             let touch = event.targetTouches[0]
+            this.touch.endX = touch.pageX
             // 到达一定值开始滑动
-            if (Math.abs(this.touch.endX - this.touch.startX) > 5) {
-              this.touch.endX = touch.pageX
+            if ((Math.abs(this.touch.endX - this.touch.startX) > 5 && !this.touch.isScrollY) || this.touch.isScrollX) {
               this.contentStyle.translateX = -this.bodyWidth * this.active + this.touch.endX - this.touch.startX
 
               if (this.contentStyle.translateX < 0 && this.contentStyle.translateX > -this.contentStyle.width + this.bodyWidth) {
                 this.headerAnim()
               }
+              this.touch.isScrollX = true
               e.preventDefault()
+            } else if (!this.touch.isScrollX) {
+              this.touch.isScrollY = true
             }
           }
         }
@@ -165,6 +170,8 @@
         }
 
         content.ontouchend = () => {
+          this.touch.isScrollY = false
+          this.touch.isScrollX = false
           if (this.moveEnable) {
             this.touch.isStart = false
             let percent = Math.abs((this.contentStyle.translateX + this.bodyWidth * this.active)) / this.bodyWidth % 1
