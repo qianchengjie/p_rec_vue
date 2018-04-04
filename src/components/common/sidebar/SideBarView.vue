@@ -3,14 +3,22 @@
     <sidebar>
       <div slot="drawer">
         <div class="drawer-header">
-          <router-link @click.native="changeDrawerVisibility" to="/user/login" class="log-reg" v-if="typeof (username) === 'undefined'">
+          <router-link @click.native="changeDrawerVisibility" to="/user/login" class="log-reg" v-if="typeof (userinfo.username) === 'undefined'">
             登录/注册
           </router-link>
-          <div v-else>
+          <div @click="logOut" class="userinfo" v-else>
+            {{userinfo.username}}
           </div>
         </div>
         <div class="drawer-content">
           <div class="menu">
+            <div class="menu-item" @click="goTo('user/model')">
+              <icon name="personal-center" h="20" w="20"/>
+              个人兴趣
+            </div>
+            <div class="menu-item" @click="goTo('user/collections')">
+              <icon name="favorite" h="20" w="20"/>我的收藏
+            </div>
           </div>
         </div>
       </div>
@@ -20,34 +28,52 @@
 </template>
 
 <script>
-import { XHeader } from 'vux'
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
+  name: 'SideBarView',
   components: {
-    XHeader,
     Sidebar: () => import('@/components/common/sidebar/Sidebar')
   },
   data () {
     return {
-      username: localStorage.username,
+      userinfo: {},
       themeIndex: 0
     }
   },
-  computed: {
-    ...mapGetters({
-    })
+  activated () {
+    this.checkUserinfo()
   },
   mounted () {
+    this.checkUserinfo()
   },
   methods: {
     ...mapActions([
       'changeDrawerVisibility',
       'getArticleList',
       'updateLoading'
-    ])
-  },
-  watch: {
+    ]),
+    checkUserinfo () {
+      if (typeof localStorage.userinfo !== 'undefined') {
+        this.userinfo = JSON.parse(localStorage.userinfo)
+      }
+    },
+    logOut () {
+      this.changeDrawerVisibility().then(res => {
+        this.$vux.confirm.show({
+          title: '提示',
+          content: '是否退出当前帐号',
+          onConfirm: () => {
+            this.userinfo = {}
+            localStorage.removeItem('userinfo')
+          }
+        })
+      })
+    },
+    goTo (link) {
+      this.changeDrawerVisibility()
+      this.$router.push(link)
+    }
   }
 }
 </script>
@@ -68,6 +94,12 @@ export default {
       align-items: center;
       justify-content: center;
     }
+    .userinfo {
+      height: 100%;
+      display: -webkit-flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
   .drawer-content {
     .menu {
@@ -75,6 +107,11 @@ export default {
       overflow-y: auto;
       .menu-item {
         padding: 0.75em;
+        display: flex;
+        align-items: center;
+        svg {
+          margin-right: 12px;
+        }
         &.active {
           background-color: #F7F7F7;
         }

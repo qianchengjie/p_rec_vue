@@ -5,7 +5,7 @@
     :leave-active-class="'animated ' + (isLogin ? 'slideOutRight' : 'slideOutLeft')">
       <div v-if="isLogin" :key="1" class="login">
         <div class="login-header">
-          <h2 class="login-header-title">登录</h2>
+          <h2 class="login-header-title">title</h2>
           <h1 style="font-size: 60px;">LOGO</h1>
         </div>
         <el-form
@@ -13,22 +13,23 @@
         ref="loginForm"
         :model="loginForm"
         :rules="loginForm.rules">
-          <el-form-item prop="userName" class="hide-req-tip">
-            <el-input v-model="loginForm.userName" placeholder="用户名" >
-              <icon slot="prepend" name="account" :h="20" :w="20" />
+          <el-form-item prop="phone" class="hide-req-tip">
+            <el-input v-model="loginForm.phone" placeholder="手机号" >
+              <icon slot="prepend" name="mobile-phone" :h="20" :w="20" />
             </el-input>
           </el-form-item>
-          <el-form-item prop="password" class="hide-req-tip">
-            <el-input v-model="loginForm.password" type="password" placeholder="密码" >
-              <icon slot="prepend" name="password" :h="20" :w="20" />
+          <el-form-item prop="code" class="hide-req-tip">
+            <el-input v-model="loginForm.code" type="number" placeholder="验证码" >
+              <icon slot="prepend" name="code" :h="20" :w="20" />
+              <el-button  style="width: 8em" @click.native="sendCode" type="primary" slot="append">{{loginForm.time === 0 ? '发送验证码' : '已发送（' + loginForm.time + '）'}}</el-button>
             </el-input>
           </el-form-item>
           <el-form-item style="margin-top: 40px">
-              <el-button :loading="loginForm.loading" style="width: 100%" type="success" @click.native="submitForm('loginForm')">{{loginForm.loading ? '登录中...' : '登录'}}</el-button>
+              <el-button :loading="loginForm.loading" style="width: 100%;" type="success" @click.native="submitForm('loginForm')">{{loginForm.loading ? '登录中...' : '登录'}}</el-button>
           </el-form-item>
           <el-form-item style="position: relative">
-            <span style="position: absolute; left: 0"> 找回密码</span>
-            <span @click="isLogin=false" style="position: absolute; right: 0">注册帐号</span>
+            <span style="position: absolute; right: 0">找回密码</span>
+            <!-- <span @click="isLogin=false" style="position: absolute; right: 0">注册帐号</span> -->
           </el-form-item>
         </el-form>
       </div>
@@ -90,17 +91,38 @@ export default {
         callback()
       }
     }
+    let ruleCode = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入验证码'))
+      } else if (!/^[0-9]{6}$/.test(value)) {
+        callback(new Error('请输入正确的验证码'))
+      } else {
+        callback()
+      }
+    }
+    let rulePhone = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入手机号'))
+      } else if (!/^[1][3,4,5,7,8][0-9]{9}$/.test(value)) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
+    }
     return {
       isLogin: true,
       loginForm: {
         loading: false,
-        userName: null,
-        password: null,
+        phone: null,
+        code: null,
+        time: 0,
         rules: {
-          userName: [
-            { required: true, message: '请输入用户名', trigger: 'blur' }
+          phone: [
+            { validator: rulePhone, trigger: 'blur' }
           ],
-          password: rulePass
+          code: [
+            { validator: ruleCode, trigger: 'blur' }
+          ]
         }
       },
       registerForm: {
@@ -122,16 +144,47 @@ export default {
   },
   methods: {
     ...mapActions([
-      'login'
+      'login',
+      'getVCodeForRegister'
     ]),
+    sendCode () {
+      let phone = this.loginForm.phone
+      if (!/^[1][3,4,5,7,8][0-9]{9}$/.test(phone)) {
+        this.$vux.toast.text('请输入正确的手机号', 'top')
+      } else {
+        if (this.loginForm.time === 0) {
+          this.getVCodeForRegister({ telephone: this.loginForm.phone }).then(res => {
+            console.log(res)
+          })
+          this.loginForm.time = 60
+          let timer = setInterval(() => {
+            if (this.loginForm.time === 1) {
+              clearInterval(timer)
+            }
+            this.loginForm.time = this.loginForm.time === 1 ? 0 : this.loginForm.time - 1
+          }, 1000)
+        } else {
+          this.$vux.toast.text('请耐心等待验证码', 'top')
+        }
+      }
+    },
     submitForm (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           switch (formName) {
             case 'loginForm':
               this.loginForm.loading = true
-              this.login().then(res => {
+              this.login({ telephone: this.loginForm.phone, verificationCode: this.loginForm.code }).then(res => {
                 this.loginForm.loading = false
+                if (res.data.code !== 0) {
+                  this.$vux.toast.text(res.data.msg, 'top')
+                } else {
+                  if (res.data.data.userType === 0) {
+                    this.$router.replace('/user/labels')
+                  } else {
+                    this.$router.replace('/')
+                  }
+                }
               }).catch(res => {
                 this.loginForm.loading = false
               })

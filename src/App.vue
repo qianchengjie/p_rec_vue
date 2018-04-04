@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <router-view />
-    <div v-transfer-dom>
+    <keep-alive include="SideBarView">
+      <router-view />
+    </keep-alive>
+    <div v-transfer-dom :saveScrollPosition="true">
       <loading v-model="isLoading"></loading>
     </div>
   </div>
@@ -69,6 +71,9 @@ html, body, #app {
   overflow: hidden;
   text-overflow:ellipsis;
   white-space: nowrap;
+}
+.weui-mask {
+  z-index: 4000 !important;
 }
 </style>
 

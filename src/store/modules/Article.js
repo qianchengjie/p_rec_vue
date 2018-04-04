@@ -1,6 +1,7 @@
 import requests from '../requests'
 
 const state = {
+  labels: [],
   article: {},
   articleList: [],
   themeArticleListIndex: 0,
@@ -17,7 +18,8 @@ const getters = {
   topList: state => state.topList,
   themeList: state => state.themeList,
   themeArticleList: state => state.themeArticleList,
-  articleListLoading: state => state.articleListLoading
+  articleListLoading: state => state.articleListLoading,
+  labels: state => state.labels
 }
 
 const actions = {
@@ -59,6 +61,20 @@ const actions = {
       'getThemeArticleList',
       true
     )
+  },
+  getLabels ({ commit, state }) {
+    return requests.get(
+      'getLabels',
+      commit,
+      'getLabels'
+    )
+  },
+  getArticles ({ commit, state }, { labelId }) {
+    return requests.get(
+      '/article/getArticles/' + labelId,
+      commit,
+      'getArticles'
+    )
   }
 }
 
@@ -67,21 +83,15 @@ const mutations = {
     state.themeArticleListIndex = index
   },
   getArticleList (state, { res }) {
-    state.articleList = []
+    state.articleList = res.data.stories
     state.topList = []
     for (let item of res.data.top_stories) {
       state.topList.push({
         id: item.id,
         url: 'article/' + item.id,
         title: item.title,
-        img: item.image
-      })
-    }
-    for (let item of res.data.stories) {
-      state.articleList.push({
-        id: item.id,
-        title: item.title,
-        src: item.images[0]
+        img: item.image,
+        scrollTop: 0
       })
     }
     state.articleListLoading = false
@@ -101,25 +111,14 @@ const mutations = {
     for (let i = 0; i < state.themeArticleList.length; i++) {
       if (state.themeArticleList[i].themeId === payload.themeId) {
         state.themeArticleList[i].content = res.data
-        let stories = []
-        for (let item of res.data.stories) {
-          if (typeof item.images !== 'undefined') {
-            stories.push({
-              id: item.id,
-              title: item.title,
-              src: item.images[0]
-            })
-          } else {
-            stories.push({
-              id: item.id,
-              title: item.title
-            })
-          }
-        }
-        state.themeArticleList[i].content.stories = stories
         state.themeArticleList[i].loading = false
       }
     }
+  },
+  getLabels (state, { res }) {
+    state.labels = res.data.data
+  },
+  getArticles (state, { res }) {
   }
 }
 

@@ -12,6 +12,7 @@ import qs from 'qs'
 import '@/static/css/animate.min.css'
 import 'element-ui/lib/theme-chalk/index.css'
 import './common/css/iconfont.css'
+import { ToastPlugin, ConfirmPlugin } from 'vux'
 
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
@@ -19,6 +20,8 @@ Vue.prototype.$qs = qs
 Vue.component('icon', Icon)
 Vue.use(VueLazyLoadImg)
 Vue.use(ElementUI)
+Vue.use(ToastPlugin)
+Vue.use(ConfirmPlugin)
 
 Vue.config.productionTip = false
 

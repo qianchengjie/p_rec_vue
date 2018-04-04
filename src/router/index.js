@@ -6,11 +6,7 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/test',
-      component: () => import('@/components/common/TopSliderbar')
-    },
-    {
-      path: '/',
+      path: '',
       component: () => import('@/components/common/sidebar/SideBarView'),
       children: [
         {
@@ -21,18 +17,34 @@ export default new Router({
               name: 'article',
               path: '/article/:id',
               component: () => import('@/components/page/index/article/Article')
-            },
-            {
-              path: '/user',
-              component: () => import('@/components/page/user/User'),
-              children: [
-                {
-                  path: 'login',
-                  component: () => import('@/components/page/user/Login')
-                }
-              ]
             }
           ]
+        }
+      ]
+    },
+    {
+      path: '/user',
+      component: () => import('@/components/page/user/User'),
+      children: [
+        {
+          path: 'login',
+          component: () => import('@/components/page/user/Login')
+        },
+        {
+          path: 'labels',
+          component: () => import('@/components/page/user/Labels')
+        },
+        {
+          path: 'collections',
+          component: () => import('@/components/page/user/Collections')
+        },
+        {
+          path: 'article/:id',
+          component: () => import('@/components/page/index/article/Article')
+        },
+        {
+          path: 'model',
+          component: () => import('@/components/page/user/Model')
         }
       ]
     }

@@ -41,7 +41,11 @@ export default {
             typeof arg3 === 'boolean' ? [payload, other] = [arg2, arg3] : [commit, mutation] = [arg2, arg3]
             break
           case 4:
-            [commit, mutation, other] = [arg2, arg3, arg4]
+            if (typeof arg4 === 'boolean') {
+              [commit, mutation, other] = [arg2, arg3, arg4]
+            } else {
+              [payload, commit, mutation] = [arg2, arg3, arg4]
+            }
             break
           case 5:
             [payload, commit, mutation, other] = [arg2, arg3, arg4, arg5]
@@ -53,7 +57,7 @@ export default {
         }
       }
       axios.get((other ? '' : process.env.API_HOST) + url, { params: payload }).then(res => {
-        if ((commit && other) || (commit && res.data.code)) { commit(mutation, { res, payload }) }
+        if ((commit && other) || (commit && res.data.code === 0)) { commit(mutation, { res, payload }) }
         resolve(res)
       }).catch(res => {
         console.log(res)
@@ -76,7 +80,11 @@ export default {
             typeof arg3 === 'boolean' ? [payload, other] = [arg2, arg3] : [commit, mutation] = [arg2, arg3]
             break
           case 4:
-            [commit, mutation, other] = [arg2, arg3, arg4]
+            if (typeof arg4 === 'boolean') {
+              [commit, mutation, other] = [arg2, arg3, arg4]
+            } else {
+              [payload, commit, mutation] = [arg2, arg3, arg4]
+            }
             break
           case 5:
             [payload, commit, mutation, other] = [arg2, arg3, arg4, arg5]
@@ -88,7 +96,7 @@ export default {
         }
       }
       axios.post((other ? '' : process.env.API_HOST) + url, qs.stringify(payload)).then(res => {
-        if ((commit && other) || (commit && res.data.code)) { commit(mutation, { res, payload }) }
+        if ((commit && other) || (commit && res.data.code === 0)) { commit(mutation, { res, payload }) }
         resolve(res)
       }).catch(res => {
         alert(res)

@@ -56,8 +56,12 @@
           translateX: 0
         },
         touch: {
+          disX: 5,
+          disY: 5,
           startX: 0,
           endX: 0,
+          startY: 0,
+          endY: 0,
           startTime: 0,
           isStart: true,
           isScrollX: false,
@@ -144,17 +148,19 @@
             if ((event.targetTouches.length > 1 || event.scale) && event.scale !== 1) return
             let touch = event.targetTouches[0]
             this.touch.endX = touch.pageX
+            this.touch.endY = touch.pageY
             // 到达一定值开始滑动
-            if ((Math.abs(this.touch.endX - this.touch.startX) > 5 && !this.touch.isScrollY) || this.touch.isScrollX) {
+            if ((Math.abs(this.touch.endY - this.touch.startY) > this.touch.disY && !this.touch.isScrollX) || (this.touch.isStart && this.touch.isScrollY)) {
+              // console.log('y' + Math.abs(this.touch.endY - this.touch.startY))
+              this.touch.isScrollY = true
+            } else if ((Math.abs(this.touch.endX - this.touch.startX) > this.touch.disX && !this.touch.isScrollY) || (this.touch.isStart && this.touch.isScrollX)) {
+              // console.log('x' + (Math.abs(this.touch.endX - this.touch.startX)))
               this.contentStyle.translateX = -this.bodyWidth * this.active + this.touch.endX - this.touch.startX
-
               if (this.contentStyle.translateX < 0 && this.contentStyle.translateX > -this.contentStyle.width + this.bodyWidth) {
                 this.headerAnim()
               }
               this.touch.isScrollX = true
               e.preventDefault()
-            } else if (!this.touch.isScrollX) {
-              this.touch.isScrollY = true
             }
           }
         }
@@ -165,13 +171,18 @@
             if ((event.targetTouches.length > 1 || event.scale) && event.scale !== 1) return
             let touch = event.targetTouches[0]
             this.touch.startX = touch.pageX
+            this.touch.startY = touch.pageY
             this.touch.startTime = new Date()
           }
         }
 
         content.ontouchend = () => {
-          this.touch.isScrollY = false
           this.touch.isScrollX = false
+          this.touch.isScrollY = false
+          this.touch.startX = 0
+          this.touch.startY = 0
+          this.touch.endX = 0
+          this.touch.endY = 0
           if (this.moveEnable) {
             this.touch.isStart = false
             let percent = Math.abs((this.contentStyle.translateX + this.bodyWidth * this.active)) / this.bodyWidth % 1
@@ -269,8 +280,7 @@
 }
 .header-list {
   height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   white-space: nowrap;
   transition: all .2s;
 }
@@ -300,11 +310,13 @@
 .content {
   box-sizing: border-box;
   position: relative;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 .content > div > div {
   width: 100vw;
   height: 100%;
   float: left;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
 </style>

@@ -1,21 +1,80 @@
 <template>
-  <div id="article" v-if="!loading">
-    <div class="article">
-      <div class="content-wrapper">
-        <div class="image-wrapper">
-          <span class="title">{{article.title}}</span>
-          <span class="image-source">{{article.image_source}}</span>
-          <img :src="article.image" class="image">
-          <div class="mask"></div>
-        </div>
-        <div v-html="article.body" class="article-body"></div>
+  <div id="article" >
+    <x-header class="x-header" style="position: fixed; width: 100vw; top: 0; z-index: 5000;" @on-click-back="$router.push('/')">
+      <div v-if="!loading" class="header-left" slot="right">
+        <span @click="showComment"><icon name="comments" :h="20" :w="20" />{{ commentNum }}</span>
+        <span @click="upvote"><icon :name="upvoteIcon" :h="20" :w="20" />{{ upvoteNum }}</span>
+        <span><icon name="bad" :h="20" :w="20" />2</span>
       </div>
+    </x-header>
+    <div v-loading="loading" 
+      :style="'height: 100vh;'
+      + (loading ? '' : 'margin-top: 46px')">
+      <div v-if="!loading">
+        <div class="article">
+          <div class="content-wrapper">
+            <div class="image-wrapper">
+              <span class="title">{{ article.title }}</span>
+              <span class="image-source">{{ article.image_source }}</span>
+              <img :src="article.image" class="image">
+              <div class="mask"></div>
+            </div>
+            <div v-html="article.body" class="article-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-transfer-dom>
+      <popup position="right" v-model="commentShow" style="width: 100vw; height: 100vh">
+        <div class="comment-body">
+          <div class="comment-header">
+            <icon @click.native="commentShow=false" class="close" name="close" :h="15" :w="15" />
+            <div>评论</div>
+          </div>
+          <div class="comment-content">
+            <div v-for="comment of commentList" :key="comment.id" class="comment-item">
+              <div class="comment-name">{{ comment.name }}</div>
+              <div class="comment-msg">{{ comment.content }}</div>
+              <div class="comment-time">{{ comment.time }}</div>
+            </div>
+          </div>
+          <divider style="width: 80%; margin-left: 10%;">已显示全部内容</divider>
+          <div @click="commentTxtShow=true" class="comment-footer">
+              <icon slot="label" name="pen" :h="20" :w="30" />
+              点击此处说两句...
+          </div>
+          <div v-if="commentTxtShow" class="comment-textarea">
+            <div class="comment-textarea-mask" @click="commentTxtShow=false"></div>
+            <div class="comment-textarea-content">
+              <group>
+                <x-textarea ref="commendTextarea" v-model="commendText" placeholder="留下你的评论">
+                </x-textarea>
+              </group>
+              <div class="comment-textarea-bottom">
+                <el-button class="comment-button" @click.native="submitComment">发表</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </popup>
     </div>
   </div>
 </template>
 <script type="text/javascript">
+import { TransferDom, XHeader, Popup, Group, XTextarea, CellBox, Divider } from 'vux'
 import { mapGetters, mapActions } from 'vuex'
 export default {
+  directives: {
+    TransferDom
+  },
+  components: {
+    Popup,
+    XHeader,
+    Group,
+    XTextarea,
+    CellBox,
+    Divider
+  },
   data () {
     return {
       isActive: false,
@@ -24,7 +83,28 @@ export default {
       activeInterval: 10,
       lasterActiveTime: 0,
       extraInfo: {},
-      preArticleId: ''
+      commentNum: 2,
+      upvoteIcon: 'good',
+      upvoteNum: 1,
+      preArticleId: '',
+      commentShow: false,
+      commendText: '',
+      commentTxtShow: false,
+      commentList: [
+        {
+          id: 1,
+          name: '游客1',
+          content: '我觉得可以',
+          time: '4小时前'
+        },
+        {
+          id: 2,
+          name: '游客2',
+          content: '我觉得不行',
+          time: '2小时前'
+        }
+      ],
+      userinfo: localStorage.userinfo ? JSON.parse(localStorage.userinfo) : null
     }
   },
   mounted () {
@@ -61,12 +141,30 @@ export default {
   destroyed () {
     // alert('用户有效活动时间：' + this.activeTime + 's')
   },
+  watch: {
+    commentTxtShow () {
+      this.$nextTick(_ => {
+        if (typeof this.$refs.commendTextarea !== 'undefined') {
+          this.$refs.commendTextarea.focus()
+        }
+      })
+    }
+  },
   methods: {
     ...mapActions([
       'getArticle',
       'getExtraInfo',
       'updateLoading'
     ]),
+    upvote () {
+      if (this.upvoteIcon === 'good') {
+        this.upvoteIcon = 'good-filling'
+        this.upvoteNum++
+      } else {
+        this.upvoteIcon = 'good'
+        this.upvoteNum--
+      }
+    },
     addActiveListener () {
       this.startCountActiveTime()
       document.ontouchstart = () => {
@@ -92,14 +190,144 @@ export default {
       this.isActive = true
     },
     showComment () {
+      this.commentShow = true
       // this.$router.push('/article/comment')
       // this.$store.commit('setArticleId', this.articleId)
+    },
+    submitComment () {
+      if (!this.commendText) {
+        this.$vux.toast.text('请输入评论内容', 'bottom')
+      } else {
+        this.commentTxtShow = false
+        this.commentList.push({
+          id: this.commentList.length + 1,
+          name: this.userinfo.username || '游客',
+          content: this.commendText,
+          time: '刚刚'
+        })
+        this.commentNum++
+        this.commendText = ''
+      }
     }
   }
 }
 </script>
 <style lang="less">
+.comment-body {
+  overflow: hidden;
+  width: 100vw;
+  height: 100%;
+  background-color: #FEFEFE;
+  .comment-header {
+    position: relative;
+    box-sizing: border-box;
+    height: 45px;
+    .close {
+      z-index: 1;
+      padding: 15px;
+      position: absolute;
+    }
+    div {
+      box-sizing: border-box;
+      padding: 10px 5px;
+      position: absolute;
+      width: 100vw;
+      left: 0;
+      text-align: center;
+    }
+  }
+  .comment-content {
+    padding: 10px 15px;
+    .comment-item {
+      margin-top: 5px;
+      .comment-name {
+        color: #888;
+      }
+      .comment-msg {
+        padding: 10px 0;
+      }
+      .comment-time {
+        color: #999;
+        font-size: 12px;
+      }
+      &:not(:last-child)::after {
+        margin-top: 10px;
+        content: ' ';
+        display: block;
+        height: 1px;
+        width: 100vw;
+        background-color: #F1F1F1;
+      }
+    }
+  }
+  .comment-footer {
+    color: #8A8A8A;
+    font-size: 14px;
+    padding: 15px;
+    background-color: #FEFEFE;
+    border-top: 1px solid #F1F1F1;
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    width: 100vw;
+    box-sizing: border-box;
+  }
+  .comment-textarea {
+    z-index: 2;
+    background-color: #FFF;
+    width: 100vw;
+    position: fixed;
+    bottom: 30px;
+    .comment-textarea-mask {
+      background-color: rgba(0,0,0,.3);
+      height: 100vh;
+      width: 100vw;
+      top: 0;
+      position: fixed;
+    }
+    .comment-textarea-content {
+      .comment-textarea-bottom {
+        position: fixed;
+        width: 100vw;
+        background-color: #FFF;
+        height: 35px;
+        bottom: 0;
+        .comment-button {
+          margin-right: 15px;
+          height: 28px;
+          font-size: 12px;
+          position: absolute;
+          right: 0;
+          width: 6em;
+          border-radius: 16px;
+          color: #FFF;
+          background-color: #D73C50;
+          border: 0;
+          padding: 0;
+          display: -webkit-inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
 #article {
+  .x-header {
+    h1 {
+      margin: 0 !important;
+    }
+  }
+  .header-left {
+    color: #FFF;
+    span {
+      padding-left: 15px;
+      display: inline-block;
+      svg {
+        padding-right: 5px;
+      }
+    }
+  }
   .article {
     .content-wrapper {
       width: 100%;

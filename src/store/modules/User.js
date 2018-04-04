@@ -7,7 +7,7 @@ const getters = {}
 const actions = {
   login ({ commit, state }, payload) {
     return requests.post(
-      '/userLogin',
+      '/userLoginByTelephone',
       payload,
       commit,
       'login'
@@ -20,14 +20,26 @@ const actions = {
       commit,
       'register'
     )
+  },
+  getVCodeForRegister ({ commit, state }, payload) {
+    // 961315
+    return requests.post(
+      '/getVCodeForRegister',
+      payload,
+      commit,
+      'getVCodeForRegister'
+    )
   }
 }
 
 const mutations = {
   login (state, { res }) {
+    localStorage.userinfo = JSON.stringify(res.data.data)
     state.drawerVisibility = !state.drawerVisibility
   },
-  register (state, { res }) {}
+  register (state, { res }) {},
+  getVCodeForRegister (state, { res }) {
+  }
 }
 
 export default {
