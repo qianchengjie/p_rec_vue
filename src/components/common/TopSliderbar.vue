@@ -13,7 +13,7 @@
         v-for="(item, index) of list"
         @click="change(index, true)"
         :class="index === active ? 'active' : ''">
-          {{item}}
+          {{ item }}
         </li>
       </ul>
       <!-- 'transform: translateX(' + headerListStyle.translateX + 'px);' +  -->
@@ -127,7 +127,6 @@
         }
       },
       headerAnim () {
-        // header渐变
         let percent = Math.abs((this.contentStyle.translateX + this.bodyWidth * this.active)) / this.bodyWidth % 1
         if (this.contentStyle.translateX < -this.bodyWidth * this.active) {
           this.startAnim(1, percent)
@@ -223,7 +222,7 @@
         this.setSliderWidth(0)
       },
       setContentStyle () {
-        this.contentStyle.height = this.$refs.top_sliderbar.offsetHeight - 40
+        this.contentStyle.height = this.$refs.top_sliderbar.offsetHeight - 40 - 46
         this.contentStyle.width = this.list.length * this.bodyWidth
       },
       setSliderWidth (index) {
@@ -241,13 +240,16 @@
         let childWidth = child.offsetWidth
         let childOffsetLeft = child.offsetLeft
         let parentWidth = parent.offsetWidth
-        this.active = index
-        if ((parentWidth - childWidth) / 2 <= childOffsetLeft && childOffsetLeft + (parentWidth + childWidth) / 2 <= this.headerListStyle.width) {
-          this.headerListStyle.translateX = -childOffsetLeft + (parentWidth - childWidth) / 2
-        } else if ((parentWidth - childWidth) / 2 > childOffsetLeft) {
-          this.headerListStyle.translateX = 0
-        } else {
-          this.headerListStyle.translateX = -this.headerListStyle.width + parentWidth
+
+        // 改变导航translateX 实现居中效果
+        if (this.headerListStyle.width > this.bodyWidth) {
+          if ((parentWidth - childWidth) / 2 <= childOffsetLeft && childOffsetLeft + (parentWidth + childWidth) / 2 <= this.headerListStyle.width) {
+            this.headerListStyle.translateX = -childOffsetLeft + (parentWidth - childWidth) / 2
+          } else if ((parentWidth - childWidth) / 2 > childOffsetLeft) {
+            this.headerListStyle.translateX = 0
+          } else {
+            this.headerListStyle.translateX = -this.headerListStyle.width + parentWidth
+          }
         }
 
         this.sliderStyle.left = childOffsetLeft + this.headerListStyle.translateX
@@ -271,6 +273,7 @@
 <style scoped>
 .top-sliderbar {
   height: 100%;
+  overflow: hidden;
 }
 .header {
   /*color: #FFF;*/
@@ -311,12 +314,5 @@
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
-}
-.content > div > div {
-  width: 100vw;
-  height: 100%;
-  float: left;
-  overflow-x: hidden;
-  overflow-y: scroll;
 }
 </style>

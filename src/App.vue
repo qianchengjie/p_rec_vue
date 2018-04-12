@@ -75,5 +75,18 @@ html, body, #app {
 .weui-mask {
   z-index: 4000 !important;
 }
+.xs-plugin-pulldown-container::after {
+  background-color: #F1F1F1;
+  display: block;
+  height: 1px;
+  content: " ";
+  width: 100vw;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+.xs-container {
+  height: 100%;
+}
 </style>
 

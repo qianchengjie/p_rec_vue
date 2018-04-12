@@ -5,10 +5,10 @@
         <x-icon @click="changeDrawerVisibility" slot="overwrite-left" type="navicon" size="35" style="fill:#fff;position:relative;top:-8px;left:-3px;"></x-icon>
       </x-header>
     </div>
-    <div v-loading="loading || (isArticleList && articleListLoading)" class="content">
+    <div v-loading="(isArticleList && articleLoading)" class="content">
       <router-view style="position: absolute; z-index: 2001; width: 100vw;" />
       <div v-if="!isArticleList" style="background: #FFF; height: 100%; position: absolute; top: 0; width: 100vw; z-index: 2000"></div>
-      <article-list :style="isArticleList && !articleListLoading && !isArticle ? '' : 'visibility: hidden'"></article-list>
+      <article-list :style="isArticleList && !articleLoading && !isArticle ? '' : 'visibility: hidden'"></article-list>
     </div>
   </div>
 </template>
@@ -34,7 +34,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'articleListLoading',
+      'articleLoading',
       'article',
       'loading'
     ])
@@ -42,20 +42,16 @@ export default {
   mounted () {
     this.isArticle = this.$route.fullPath !== '/'
     this.routeListener(this.$route)
-    this.getThemeList()
-    this.getArticleList()
     this.getLabels().then(res => {
-      this.getArticles({ labelId: res.data.data[1].id })
+      this.getArticles({ userId: 1 })
     })
   },
   methods: {
     ...mapActions([
-      'getArticleList',
+      'getArticles',
       'updateLoading',
       'changeDrawerVisibility',
-      'getThemeList',
-      'getLabels',
-      'getArticles'
+      'getLabels'
     ]),
     routeListener (val) {
       this.isArticleList = val.fullPath === '/'

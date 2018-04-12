@@ -30,13 +30,13 @@ export default {
         radar: [
           {
             indicator: [
-              {text: '心理学', max: 100},
-              {text: '电影', max: 100},
-              {text: '设计', max: 100},
-              {text: '音乐', max: 100},
-              {text: '动漫', max: 100},
+              {text: '社会', max: 100},
+              {text: '科学', max: 100},
               {text: '游戏', max: 100},
-              {text: '财金', max: 100}
+              {text: '娱乐', max: 100},
+              {text: '美食', max: 100},
+              {text: '新闻', max: 100},
+              {text: '养生', max: 100}
             ],
             radius: 80
           }

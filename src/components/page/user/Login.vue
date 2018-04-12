@@ -5,8 +5,8 @@
     :leave-active-class="'animated ' + (isLogin ? 'slideOutRight' : 'slideOutLeft')">
       <div v-if="isLogin" :key="1" class="login">
         <div class="login-header">
-          <h2 class="login-header-title">title</h2>
-          <h1 style="font-size: 60px;">LOGO</h1>
+          <h2 class="login-header-title">NEWS</h2>
+          <h1 style="font-size: 60px;">资讯快报</h1>
         </div>
         <el-form
         class="form"
@@ -145,7 +145,7 @@ export default {
   methods: {
     ...mapActions([
       'login',
-      'getVCodeForRegister'
+      'getCode'
     ]),
     sendCode () {
       let phone = this.loginForm.phone
@@ -153,9 +153,7 @@ export default {
         this.$vux.toast.text('请输入正确的手机号', 'top')
       } else {
         if (this.loginForm.time === 0) {
-          this.getVCodeForRegister({ telephone: this.loginForm.phone }).then(res => {
-            console.log(res)
-          })
+          this.getCode({ telephone: this.loginForm.phone })
           this.loginForm.time = 60
           let timer = setInterval(() => {
             if (this.loginForm.time === 1) {
@@ -179,7 +177,7 @@ export default {
                 if (res.data.code !== 0) {
                   this.$vux.toast.text(res.data.msg, 'top')
                 } else {
-                  if (res.data.data.userType === 0) {
+                  if (res.data.data.userType === 1) {
                     this.$router.replace('/user/labels')
                   } else {
                     this.$router.replace('/')

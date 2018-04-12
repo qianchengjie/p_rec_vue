@@ -24,6 +24,7 @@ export default new Router({
     },
     {
       path: '/user',
+      redirect: '/',
       component: () => import('@/components/page/user/User'),
       children: [
         {
@@ -47,6 +48,10 @@ export default new Router({
           component: () => import('@/components/page/user/Model')
         }
       ]
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ]
 })

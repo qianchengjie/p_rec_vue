@@ -5,24 +5,23 @@
     :moveEnable="moveEnable"
     :list="list">
       <div ref="container" class="container">
-        <div>
+        <!-- <div>
           <swiper v-preventMove :list="topList"/>
           <article-item @on-item-click="showArticle" @on-dislike-click="showDislike" :list="articleList"></article-item>
-        </div>
-        <div
-        @scroll="saveScrollTop(themeArticle, $event)"
-        :class="themeArticle.loading ? 'el-loading-parent--relative' : ''"
-        :style="'background: url(' + themeArticle.content.background + ')'"
-        v-for="(themeArticle, index) of themeArticleList">
-          <article-item v-if="Math.abs(themeArticleListIndex - index - 1) < 2" @on-item-click="showArticle" @on-dislike-click="showDislike" :list="themeArticle.content.stories"></article-item>
-          <div v-if="themeArticle.loading" class="el-loading-mask" style="">
-            <div class="el-loading-spinner">
-              <svg viewBox="25 25 50 50" class="circular">
-                <circle cx="50" cy="50" r="20" fill="none" class="path"></circle>
-              </svg>
+        </div> -->
+          <div
+          @scroll="saveScrollTop(item, $event)"
+          :class="item.loading ? 'el-loading-parent--relative' : ''"
+          v-for="(item, index) of articleList">
+            <article-item v-if="Math.abs(labelsActive - index) < 2" @on-item-click="showArticle" @on-dislike-click="showDislike" :list="item.content"></article-item>
+            <div v-if="item.loading" class="el-loading-mask" style="">
+              <div class="el-loading-spinner">
+                <svg viewBox="25 25 50 50" class="circular">
+                  <circle cx="50" cy="50" r="20" fill="none" class="path"></circle>
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
       </div>
     </top-sliderbar>
 
@@ -31,8 +30,8 @@
         <div class="dislike-dialog">
           <div class="dislike-dialog-header">
             <small>可选理由</small>
-            <el-tag v-if="dislikeDialog.reason.length === 0" class="dislike-tag" @click.native="dislike">不感兴趣</el-tag>
-            <el-tag v-else @click.native="dislike" class="dislike-tag">确定</el-tag>
+            <el-tag v-if="dislikeDialog.reason.length === 0" class="dislike-tag" @click.native="doDislike">不感兴趣</el-tag>
+            <el-tag v-else @click.native="doDislike" class="dislike-tag">确定</el-tag>
           </div>
            <checker v-model="dislikeDialog.reason" type="checkbox" default-item-class="el-tag tag" selected-item-class="el-tag tag tag-selected">
             <checker-item :value="1">看过了</checker-item>
@@ -86,35 +85,26 @@ export default {
   computed: {
     ...mapGetters([
       'articleList',
-      'topList',
-      'themeList',
-      'themeArticleList',
-      'themeArticleListIndex'
+      'labels',
+      'labelsActive'
     ]),
     list () {
       let list = []
-      list.push('首页')
-      for (let item of this.themeList) {
-        list.push(item.name)
+      list.push('推荐')
+      for (let item of this.labels) {
+        list.push(item.labelName)
       }
       return list
     },
     ind: {
-      set (val) {
-        this.setThemeArticleListIndex({ index: val })
+      set (val, oldVal) {
+        this.setLabelsActive({ index: val })
         if (val === 0) { return }
-        for (let item of this.themeArticleList) {
-          if (item.themeId === this.themeList[val - 1].id) {
-            if (item.loading) {
-              this.getThemeArticleList({themeId: this.themeList[val - 1].id}).then(res => {
-              })
-            }
-          }
-        }
+        this.getArticlesByLabelId({ labelId: this.labels[val - 1].id })
         return val
       },
       get () {
-        return this.themeArticleListIndex
+        return this.labelsActive
       }
     }
   },
@@ -123,8 +113,9 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getThemeArticleList',
-      'setThemeArticleListIndex'
+      'getArticlesByLabelId',
+      'setLabelsActive',
+      'dislike'
     ]),
     showArticle (item) {
       this.$router.push({
@@ -136,8 +127,12 @@ export default {
       this.dislikeDialog.show = true
       this.dislikeDialog.item = item
     },
-    dislike () {
+    doDislike () {
       this.dislikeDialog.show = false
+      this.dislike({ articleId: this.dislikeDialog.item.id, flag: 1 }).then(res => {
+        if (res.data.code === 0) {
+        }
+      })
     },
     saveScrollTop (item, event) {
       if (event.target.scrollTop !== 0) {
@@ -146,18 +141,12 @@ export default {
     },
     resetScrollTop () {
       let items = this.$refs.container.children
-      let i = this.themeArticleListIndex
-      items[i].scrollTop = this.themeArticleList[i - 1].scrollTop
-      if (i + 1 < items.length) {
-        items[i + 1].scrollTop = this.themeArticleList[i + 1].scrollTop
-      }
-      if (i > items.length) {
-        items[i - 1].scrollTop = this.themeArticleList[i - 1].scrollTop
-      }
+      let i = this.labelsActive
+      items[i].scrollTop = this.articleList[i].scrollTop
     }
   },
   watch: {
-    themeArticleListIndex (val, oldVal) {
+    labelsActive (val, oldVal) {
       this.$nextTick(_ => {
         this.resetScrollTop()
       })
@@ -172,6 +161,13 @@ export default {
     height: 100%;
     .container {
       height: 100%;
+      & > div {
+        width: 100vw;
+        height: 100%;
+        float: left;
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
     }
   }
   .dislike-dialog {

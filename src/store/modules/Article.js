@@ -1,124 +1,193 @@
-import requests from '../requests'
+import Requests from '../requests'
 
 const state = {
-  labels: [],
   article: {},
+  comment: [],
+  labels: [],
+  labelsActive: 0,
   articleList: [],
-  themeArticleListIndex: 0,
-  topList: [],
-  themeList: [],
-  themeArticleList: [],
-  articleListLoading: true
+  articleLoading: false,
+  collectList: []
 }
 
 const getters = {
   article: state => state.article,
+  comment: state => state.comment,
+  labels: state => state.labels,
   articleList: state => state.articleList,
-  themeArticleListIndex: state => state.themeArticleListIndex,
-  topList: state => state.topList,
-  themeList: state => state.themeList,
-  themeArticleList: state => state.themeArticleList,
-  articleListLoading: state => state.articleListLoading,
-  labels: state => state.labels
+  labelsActive: state => state.labelsActive,
+  articleLoading: state => state.articleLoading,
+  collectList: state => state.collectList
 }
 
 const actions = {
-  setThemeArticleListIndex ({ commit, state }, { index }) {
-    commit('setThemeArticleListIndex', { index })
+  getArticle ({ commit }, payload) {
+    return Requests.do('getArticle', commit, payload)
   },
-  getArticleList ({ commit, state }) {
-    return requests.get(
-      'http://zhihuapi.herokuapp.com/api/4/news/latest',
-      commit,
-      'getArticleList',
-      true
-    )
+  findComment ({ commit }, payload) {
+    return Requests.do('findComment', commit, payload)
   },
-  getArticle ({ commit, state }, { articleId }) {
-    return requests.get(
-      'http://zhihuapi.herokuapp.com/api/4/news/' + articleId,
-      commit,
-      'getArticle',
-      true
-    )
+  addComment ({ commit }, payload) {
+    return Requests.do('addComment', commit, payload)
   },
-  getExtraInfo ({ commit, state }) {
-    return requests.get('http://zhihuapi.herokuapp.com/api/4/story-extra/' + state.article.id, true)
+  getLabels ({ commit }) {
+    return Requests.do('getLabels', commit)
   },
-  getThemeList ({ commit, state }) {
-    return requests.get(
-      'http://zhihuapi.herokuapp.com/api/4/themes',
-      commit,
-      'getThemeList',
-      true
-    )
+  setLabelsActive ({ commit }, payload) {
+    commit('setLabelsActive', payload)
   },
-  getThemeArticleList ({ commit, state }, { themeId }) {
-    return requests.get(
-      'http://zhihuapi.herokuapp.com/api/4/theme/' + themeId,
-      { themeId },
-      commit,
-      'getThemeArticleList',
-      true
-    )
+  getArticles ({ commit }, payload) {
+    return Requests.do('getArticles', commit, payload)
   },
-  getLabels ({ commit, state }) {
-    return requests.get(
-      'getLabels',
-      commit,
-      'getLabels'
-    )
+  getArticlesByLabelId ({ commit }, payload) {
+    return Requests.do('getArticlesByLabelId', commit, payload, '/' + payload.labelId)
   },
-  getArticles ({ commit, state }, { labelId }) {
-    return requests.get(
-      '/article/getArticles/' + labelId,
-      commit,
-      'getArticles'
-    )
+  updateArticleLoading ({ commit }, payload) {
+    commit('updateArticleLoading', payload)
+  },
+  addCollect ({ commit }, payload) {
+    return Requests.do('addCollect', commit, payload)
+  },
+  cancelCollect ({ commit }, payload) {
+    return Requests.do('cancelCollect', commit, payload)
+  },
+  addAgree ({ commit, state }, payload) {
+    state.article.flagAgree === 1 ? state.article.agreeNum-- : state.article.agreeNum++
+    state.article.flagAgree = state.article.flagAgree === 1 ? 0 : 1
+    return Requests.do('addAgree', commit, payload)
+  },
+  addDisAgree ({ commit, state }, payload) {
+    state.article.flagDisagree === 1 ? state.article.disagressNum-- : state.article.disagressNum++
+    state.article.flagDisagree = state.article.flagDisagree === 1 ? 0 : 1
+    return Requests.do('addDisAgree', commit, payload)
+  },
+  getCollectList ({ commit }, payload) {
+    return Requests.do('getCollectList', commit, payload)
+  },
+  userAddLabel ({ commit }, payload) {
+    let labelIds = ''
+    for (let labelId of payload.labelIds) {
+      labelIds += labelId + '/'
+    }
+    payload.labelIds = labelIds.substr(0, labelIds.length - 1)
+    return Requests.do('userAddLabel', commit, payload)
+  },
+  userFocusOn ({ commit }, payload) {
+    return Requests.do('userFocusOn', commit, payload)
+  },
+  dislike ({ commit }, payload) {
+    return Requests.do('dislike', commit, payload)
   }
 }
 
 const mutations = {
-  setThemeArticleListIndex (state, { index }) {
-    state.themeArticleListIndex = index
+  getArticle (state, { res, articleId }) {
+    state.article = res.data.data
+    // for (let i = 0; i < state.articleList.length; i++) {
+    //   for (let j = 0; j < state.articleList[i].content.length; j++) {
+    //     if (state.articleList[i].content[j].id === Number(articleId)) {
+    //       state.article = state.articleList[i].content[j]
+    //     }
+    //   }
+    // }
   },
-  getArticleList (state, { res }) {
-    state.articleList = res.data.stories
-    state.topList = []
-    for (let item of res.data.top_stories) {
-      state.topList.push({
-        id: item.id,
-        url: 'article/' + item.id,
-        title: item.title,
-        img: item.image,
-        scrollTop: 0
-      })
-    }
-    state.articleListLoading = false
+  findComment (state, { res }) {
+    state.comment = res.data.data
+    state.comment.reverse()
   },
-  getArticle (state, { res }) {
-    state.article = res.data
-  },
-  getThemeList (state, { res }) {
-    state.themeList = res.data.others
-    state.themeArticleList = []
-    for (let item of res.data.others) {
-      state.themeArticleList.push({ themeId: item.id, content: {}, loading: true })
-    }
-    state.articleListLoading = false
-  },
-  getThemeArticleList (state, { res, payload }) {
-    for (let i = 0; i < state.themeArticleList.length; i++) {
-      if (state.themeArticleList[i].themeId === payload.themeId) {
-        state.themeArticleList[i].content = res.data
-        state.themeArticleList[i].loading = false
+  addComment (state, { res, payload }) {
+    if (res.data.code === 0) {
+      if (!payload.pId) {
+        state.comment.unshift(res.data.data)
       }
+      state.article.plNum++
     }
   },
   getLabels (state, { res }) {
     state.labels = res.data.data
+    state.articleList = []
+    for (let i = 0; i <= state.labels.length; i++) {
+      if (i === 0) {
+        state.articleList.push({
+          labelId: 0,
+          labelName: '首页',
+          content: [],
+          scrollTop: 0,
+          loading: true
+        })
+      } else {
+        let label = state.labels[i - 1]
+        state.articleList.push({
+          labelId: label.id,
+          labelName: label.labelName,
+          content: [],
+          scrollTop: 0,
+          loading: true
+        })
+      }
+    }
+  },
+  setLabelsActive (state, { index }) {
+    state.labelsActive = index
   },
   getArticles (state, { res }) {
+    console.log(res.data.data)
+    state.articleList[0].content = res.data.data
+    state.articleList[0].loading = false
+  },
+  getArticlesByLabelId (state, { res, payload }) {
+    for (let i = 1; i < state.articleList.length; i++) {
+      if (state.articleList[i].labelId === payload.labelId) {
+        state.articleList[i].content = res.data.data
+        state.articleList[i].loading = false
+      }
+    }
+  },
+  updateArticleLoading (state, { loading }) {
+    state.articleLoading = loading
+  },
+  addCollect (state, { res }) {
+    if (res.data.code === 0) {
+      state.article.flagCollect = 1
+    }
+  },
+  cancelCollect (state, { res }) {
+    if (res.data.code === 0) {
+      state.article.flagCollect = 0
+    }
+  },
+  addAgree (state, { res }) {
+    if (res.data.code !== 0) {
+      state.article.flagAgree === 1 ? state.article.agreeNum-- : state.article.agreeNum++
+      state.article.flagAgree = state.article.flagAgree === 1 ? 0 : 1
+    }
+  },
+  addDisAgree (state, { res }) {
+    if (res.data.code !== 0) {
+      state.article.flagDisagree === 1 ? state.article.disagressNum-- : state.article.disagressNum++
+      state.article.flagDisagree = state.article.flagDisagree === 1 ? 0 : 1
+    }
+  },
+  getCollectList (state, { res }) {
+    state.collectList = res.data.data
+  },
+  userAddLabel (state, { res }) {
+    if (res.data.code === 0) {
+      let userinfo = JSON.parse(localStorage.userinfo)
+      userinfo.userType = 0
+      localStorage.userinfo = JSON.stringify(userinfo)
+    }
+  },
+  userFocusOn (state, { res }) {},
+  dislike (state, { res, payload }) {
+    console.log(res)
+    if (res.data.code === 0) {
+      for (let i = 0; i < state.articleList[state.labelsActive].content.length; i++) {
+        if (state.articleList[state.labelsActive].content[i].id === payload.articleId) {
+          state.articleList[state.labelsActive].content.splice(i, 1)
+        }
+      }
+    }
   }
 }
 

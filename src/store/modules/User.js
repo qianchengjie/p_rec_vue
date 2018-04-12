@@ -1,45 +1,35 @@
 import requests from '../requests'
 
-const state = {}
+const state = {
+  userinfo: localStorage.userinfo ? JSON.parse(localStorage.userinfo) : null
+}
 
-const getters = {}
+const getters = {
+  userinfo: state => state.userinfo
+}
 
 const actions = {
   login ({ commit, state }, payload) {
-    return requests.post(
-      '/userLoginByTelephone',
-      payload,
-      commit,
-      'login'
-    )
+    return requests.do('login', commit, payload)
   },
-  register ({ commit, state }, payload) {
-    return requests.post(
-      '/userRegister',
-      payload,
-      commit,
-      'register'
-    )
+  logOut ({ commit, state }) {
+    state.userinfo = null
+    localStorage.removeItem('userinfo')
   },
-  getVCodeForRegister ({ commit, state }, payload) {
-    // 961315
-    return requests.post(
-      '/getVCodeForRegister',
-      payload,
-      commit,
-      'getVCodeForRegister'
-    )
+  getCode ({ commit, state }, payload) {
+    return requests.do('getCode', commit, payload)
   }
 }
 
 const mutations = {
   login (state, { res }) {
-    localStorage.userinfo = JSON.stringify(res.data.data)
+    if (res.data.code === 0) {
+      state.userinfo = res.data.data
+      localStorage.userinfo = JSON.stringify(res.data.data)
+    }
     state.drawerVisibility = !state.drawerVisibility
   },
-  register (state, { res }) {},
-  getVCodeForRegister (state, { res }) {
-  }
+  getCode (state, { res }) {}
 }
 
 export default {

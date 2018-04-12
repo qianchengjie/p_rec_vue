@@ -14,6 +14,8 @@ import 'element-ui/lib/theme-chalk/index.css'
 import './common/css/iconfont.css'
 import { ToastPlugin, ConfirmPlugin } from 'vux'
 
+axios.defaults.withCredentials = true
+
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 
@@ -25,10 +27,21 @@ Vue.use(ConfirmPlugin)
 
 Vue.config.productionTip = false
 
-// 页面切换显示loading
+let path = [
+  '/user/collections',
+  '/user/model'
+]
+
 router.beforeEach((to, from, next) => {
-  store.commit('updateLoadingStatus', { isLoading: true })
-  next()
+  if (path.includes(to.fullPath) && !localStorage.userinfo) {
+    if (from.fullPath !== '/') {
+      store.commit('updateLoadingStatus', { isLoading: true })
+    }
+    next('/')
+  } else {
+    store.commit('updateLoadingStatus', { isLoading: true })
+    next()
+  }
 })
 router.afterEach((to) => {
   store.commit('updateLoadingStatus', { isLoading: false })

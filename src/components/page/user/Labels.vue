@@ -1,12 +1,10 @@
 <template>
   <div>
-    <ul>
-        <divider>选择您感兴趣的内容</divider>
-       <checker v-model="chooseLabels" type="checkbox" default-item-class="el-tag" selected-item-class="tag-selected">
-        <checker-item v-for="item of labels" :value="item.id" :key="item.id">{{item.labelName}}</checker-item>
-      </checker>
-      <x-button @click.native="nextStep" style="position: absolute; bottom: 0" type="primary">下一步</x-button>
-    </ul>
+    <divider>选择您感兴趣的内容</divider>
+    <checker style="height: 100vh;" v-model="chooseLabels" type="checkbox" default-item-class="el-tag" selected-item-class="tag-selected">
+      <checker-item v-for="item of labels" :value="item.id" :key="item.id">{{item.labelName}}</checker-item>
+    </checker>
+    <x-button @click.native="nextStep" style="position: absolute; bottom: 0" type="primary">下一步</x-button>
   </div>
 </template>
 
@@ -28,7 +26,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'labels'
+      'labels',
+      'userinfo'
     ])
   },
   mounted () {
@@ -38,10 +37,16 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getLabels'
+      'getLabels',
+      'userAddLabel'
     ]),
     nextStep () {
-      this.$router.replace('/')
+      this.userAddLabel({ labelIds: this.chooseLabels, userId: this.userinfo.id }).then(res => {
+        console.log(res)
+        if (res.data.code === 0) {
+          this.$router.replace('/')
+        }
+      })
     }
   }
 }

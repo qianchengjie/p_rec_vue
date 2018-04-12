@@ -6,7 +6,7 @@
     style="margin-top: 46px;"
     @on-item-click="showArticle"
     @on-dislike-click="showDisCollect"
-    :list="articleList"></article-item>
+    :list="collectList"></article-item>
   </div>
 </template>
 
@@ -19,25 +19,34 @@ export default {
     ArticleItem: () => import('@/components/page/index/article/ArticleItem')
   },
   data () {
-    return {}
+    return {
+      userinfo: localStorage.userinfo ? JSON.parse(localStorage.userinfo) : null
+    }
+  },
+  mounted () {
+    this.getCollectList({ userId: this.userinfo.id })
   },
   computed: {
     ...mapGetters([
-      'articleList',
-      'topList'
+      'collectList'
     ])
-  },
-  mounted () {
-    this.getArticleList()
   },
   methods: {
     ...mapActions([
-      'getArticleList'
+      'getCollectList'
     ]),
     showArticle (item) {
       this.$router.push({
         path: 'article/' + item.id
       })
+    },
+    checkLogin () {
+      if (!this.userinfo) {
+        this.$vux.toast.text('请先登录', 'bottom')
+        this.$router.push('/')
+        return false
+      }
+      return true
     },
     showDisCollect (item) {
       const _this = this

@@ -3,15 +3,15 @@
     <sidebar>
       <div slot="drawer">
         <div class="drawer-header">
-          <router-link @click.native="changeDrawerVisibility" to="/user/login" class="log-reg" v-if="typeof (userinfo.username) === 'undefined'">
+          <router-link @click.native="changeDrawerVisibility" to="/user/login" class="log-reg" v-if="!userinfo">
             登录/注册
           </router-link>
-          <div @click="logOut" class="userinfo" v-else>
-            {{userinfo.username}}
+          <div @click="doLogOut" class="userinfo" v-else>
+            {{ userinfo.username }}
           </div>
         </div>
         <div class="drawer-content">
-          <div class="menu">
+          <div class="menu" v-if="userinfo">
             <div class="menu-item" @click="goTo('user/model')">
               <icon name="personal-center" h="20" w="20"/>
               个人兴趣
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'SideBarView',
@@ -37,35 +37,29 @@ export default {
   },
   data () {
     return {
-      userinfo: {},
       themeIndex: 0
     }
   },
-  activated () {
-    this.checkUserinfo()
-  },
-  mounted () {
-    this.checkUserinfo()
+  computed: {
+    ...mapGetters([
+      'userinfo'
+    ])
   },
   methods: {
     ...mapActions([
       'changeDrawerVisibility',
       'getArticleList',
-      'updateLoading'
+      'updateLoading',
+      'logOut'
     ]),
-    checkUserinfo () {
-      if (typeof localStorage.userinfo !== 'undefined') {
-        this.userinfo = JSON.parse(localStorage.userinfo)
-      }
-    },
-    logOut () {
+    doLogOut () {
+      var _this = this
       this.changeDrawerVisibility().then(res => {
         this.$vux.confirm.show({
           title: '提示',
           content: '是否退出当前帐号',
           onConfirm: () => {
-            this.userinfo = {}
-            localStorage.removeItem('userinfo')
+            _this.logOut()
           }
         })
       })

@@ -1,7 +1,6 @@
 import qs from 'qs'
 import axios from 'axios'
-
-const ERROR_CODE = 0
+import API from './api'
 /* export default function ({ url = null, method = 'GET', payload = null, commit = null, mutation = null, other = false }) {
   return new Promise((resolve, reject) => {
     switch (method) {
@@ -24,6 +23,8 @@ const ERROR_CODE = 0
     }
   })
 } */
+// const SUCCESS_CODE = 0
+const ERROR_CODE = 0
 
 export default {
   get (arg1, arg2, arg3, arg4, arg5) {
@@ -60,7 +61,6 @@ export default {
         if ((commit && other) || (commit && res.data.code === 0)) { commit(mutation, { res, payload }) }
         resolve(res)
       }).catch(res => {
-        console.log(res)
         reject(res)
       })
     })
@@ -99,9 +99,31 @@ export default {
         if ((commit && other) || (commit && res.data.code === 0)) { commit(mutation, { res, payload }) }
         resolve(res)
       }).catch(res => {
-        alert(res)
         reject(res)
       })
+    })
+  },
+  do (mutation, commit, payload, urlParams) {
+    return new Promise((resolve, reject) => {
+      let api = API[mutation]
+      let url = api[0]
+      let method = api[1]
+      if (method === 'GET') {
+        if (urlParams) { url += urlParams }
+        axios.get(process.env.API_HOST + url, { params: payload }).then(res => {
+          if (commit) { commit(mutation, { res, payload }) }
+          resolve(res)
+        }).catch(res => {
+          reject(res)
+        })
+      } else if (method === 'POST' || typeof method === 'undefined') {
+        axios.post(process.env.API_HOST + url, qs.stringify(payload)).then(res => {
+          if (commit) { commit(mutation, { res, payload }) }
+          resolve(res)
+        }).catch(res => {
+          reject(res)
+        })
+      }
     })
   }
 }
